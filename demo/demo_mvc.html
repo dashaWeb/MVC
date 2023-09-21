@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DEMO MVC</title>
+    <style>
+        .model, .view, .controller{
+            border: solid 1px #888;
+            box-shadow: 5px 5px 7px #aaa;
+            display: inline-block;
+            margin-right: 40px;
+            vertical-align: top;
+            width: 300px;
+        }
+        .view, .controller{
+            height: 400px;
+        }
+        .model{
+            height: 350px;
+        }
+        .model pre, .view p, .controller div{
+            padding: 0 10px;
+        }
+        .view, .controller{
+            margin-top: 80px;
+        }
+        .models{
+            display: inline-flex;
+            flex-direction: column;
+            margin-top: -65px;
+            vertical-align: top;
+        }
+        .marks-model{
+            margin-top: 0;
+        }
+        .timetable-model{
+            margin-top: 10px;
+        }
+        h2{
+            background-color: ccc;
+            margin: 0;
+            padding: 5px;
+            text-align: center;
+        }
+        input[type=radio]{
+            margin: 10px 0 0 10px;
+        }
+        .nav{
+            display: flex;
+            justify-content: space-between;
+            list-style-type: none;
+            margin: 0;
+            padding: 0;
+        }
+        .nav li{
+            background-color: ddd;
+            cursor: pointer;
+            flex-grow: 1;
+            margin: 2px;
+            padding: 3px 0;
+            text-align: center;
+        }
+        .tile{
+            border: solid 1px #aaa;
+            display: inline-block;
+            margin: 5px 3px;
+            text-align: center;
+            vertical-align: top;
+        }
+        .timetable{
+            border:solid 1px #888;
+            border-collapse: collapse;
+        }
+        .timetable th, .timetable td{
+            border:solid 1px #888;
+           padding: 3px 5px;
+        }
+
+    </style>
+</head>
+<body>
+    <h1>Demo MVC</h1>
+    <div class="view">
+        <h2>View</h2>
+        <ul class="nav">
+            <li onclick="window.controller.marksAsList()">Marks</li>
+            <li onclick="window.controller.timetable()">Timetable</li>
+            <li onclick="window.controller.mixed()">Mixed</li>
+        </ul>
+        <div id="view-content"></div>
+    </div>
+    <div class="controller">
+        <h2>Controller</h2>
+        <p></p>
+    </div>
+    <div class="models">
+        <div class="model marks-model">
+            <h2>Marks Model</h2>
+            <pre></pre>
+        </div>
+        <div class="model timetable-model">
+            <h2>Timetable Model</h2>
+            <pre></pre>
+        </div>
+    </div>
+
+
+
+    <script>
+        class MarksModel{
+            constructor(){
+                this.marks = [
+                    {course:'HTML',mark:'B+'},
+                    {course:'CSS',mark:'A-'},
+                    {course:'JS',mark:'A'},
+                ]
+                this.out = document.querySelector('.marks-model pre');
+                this.updateDemoBlock()
+            }
+            getMarks(){
+                return this.marks;
+            }
+            addMark(data){
+                this.marks.push(data);
+                this.updateDemoBlock();
+            }
+            updateDemoBlock(){
+                this.out.innerText = JSON.stringify(this.getMarks(),null,2);
+            }
+        }
+        class TimeTableModel{
+            constructor(){
+                this.timetable = [
+                    {course:'HTML',date:'Feb 01'},
+                    {course:'CSS',date:'Aug 14'},
+                    {course:'JS',date:'Nov 21'},
+                ]
+                this.out = document.querySelector('.timetable-model pre');
+                this.updateDemoBlock()
+            }
+            getTimetable(){
+                return this.timetable;
+            }
+            addTimeTable(data){
+                this.timetable.push(data);
+                this.updateDemoBlock();
+            }
+            updateDemoBlock(){
+                this.out.innerText = JSON.stringify(this.getTimetable(),null,2);
+            }
+        }
+        class View {
+            constructor(){
+                this.out = document.querySelector('#view-content');
+                this.marksTemplate = `<h3>Marks</h3>
+                <label> <input type = "radio" name = "disp" id = "radio-list" onclick = "window.controller.marksAsList()">List</label>
+                <label> <input type = "radio" name = "disp" id = "radio-tile" onclick = "window.controller.marksAsTile()">Tile</label>
+                
+                {{body}}`;
+                this.timetableTemplate = `<h3>Timetable</h3>{{body}}`;
+                    this.mixedTemplate = `<h3>Mixe view</h3>{{body}}
+                    <div><br>
+                        <label> <input type = "text" name = "add-course" placeholder="Course"></label><br>
+                    <label> <input type = "date" name = "add-date"></label><br>
+                    <label> <input type = "text" name = "add-mark" placeholder ="mark"</label><br>
+                    <input type = "button" value= "Add Mark" onclick = "window.controller.addData()"></div>`;
+
+            }
+            showMarksList(data){
+                let body = "<ul>"
+                    for (const record of data) {
+                        body += `<li>${record.course} - ${record.mark}</li>`
+                    }
+                body+="</ul>"
+                this.out.innerHTML = this.marksTemplate.replace('{{body}}',body);
+                document.querySelector('#radio-list').checked = true;
+            }
+            showMarksTile(data){
+                let body = "<div>"
+                    for (const record of data) {
+                        body += `<div class = "tile">${record.course} <br> ${record.mark}</div>`
+                    }
+                body+="</div>"
+                this.out.innerHTML = this.marksTemplate.replace('{{body}}',body);
+                document.querySelector('#radio-tile').checked = true;
+            }
+            showTimetable(data){
+                let body = "<table class = 'timetable'><tr><th>Course</th><th>Date</th></tr>"
+                    for (const record of data) {
+                        body += `<tr><td>${record.course}</td><td> ${record.date}</td>`
+                    }
+                body+="</table>"
+                this.out.innerHTML = this.timetableTemplate.replace('{{body}}',body);
+            }
+            showMixed(data){
+                let body = "<table class = 'timetable'><tr><th>Course</th><th>Date</th><th>Date</th></tr>"
+                    for (const record of data) {
+                        body += `<tr><td>${record.course}</td><td> ${record.date}</td><td> ${record.mark}</td>`
+                    }
+                body+="</table>"
+                this.out.innerHTML = this.mixedTemplate.replace('{{body}}',body);
+            }
+        }
+        class Controller{
+            constructor(){
+                this.out = document.querySelector('.controller p');
+            }
+            defaultAction(){
+                window.MarksModel.updateDemoBlock();
+                window.view.showMarksList(window.MarksModel.getMarks());
+                this.out.innerHTML= "Default action: <b> Show model as list</b><br>"
+            }
+            marksAsList(){
+                window.view.showMarksList(window.MarksModel.getMarks());
+                this.out.innerHTML += 'User action : <b> Show model as list</b><br>'
+            }
+            marksAsTile(){
+                window.view.showMarksTile(window.MarksModel.getMarks());
+                this.out.innerHTML += "User action <b>Show model as tile</b> <br>"
+            }
+            timetable(){
+                window.view.showTimetable(window.timetableModel.getTimetable());
+                this.out.innerHTML += "User action <b>Showtimetable</b> <br>"
+                
+            }
+            mixed(){
+                const timetable = window.timetableModel.getTimetable();
+                const marks = window.MarksModel.getMarks();
+                let data = [];
+                for (let i = 0; i < marks.length; i++) {
+                    let mark = {...marks[i]}
+                    mark.data = timetable[i].date;
+                    data.push(mark);
+                }
+                window.view.showMixed(data);
+                this.out.innerHTML += "User action <b>Show Mixed</b> <br>"
+            }
+            addData(){
+                const course = document.querySelector('input[name = "add-course"]').value;
+                const mark = document.querySelector('input[name = "add-mark"]').value;
+                const date = document.querySelector('input[name = "add-date"]').value;
+                window.MarksModel.addMark({'course':course,
+                'mark':mark})
+                window.timetableModel.addTimeTable({
+
+                    'course':course,
+                    'date':new Date(date).toDateString().substring(4,10)
+                })
+                this.mixed();
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded',()=>{
+            window.MarksModel = new MarksModel();
+            window.timetableModel = new TimeTableModel();
+            window.view = new View()
+            window.controller = new Controller()
+            window.controller.defaultAction();
+        })
+    </script>
+</body>
+</html>
